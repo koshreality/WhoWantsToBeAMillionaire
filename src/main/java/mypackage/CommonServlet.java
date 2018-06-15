@@ -19,7 +19,7 @@ public abstract class CommonServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        String dbUrl = "192.168.2.124:1433";
+        String dbUrl = "localhost:1433";
         String databaseName = "millioner";
         String username = "millioner";
         String password = "millioner";

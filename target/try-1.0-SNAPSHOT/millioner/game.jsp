@@ -366,10 +366,10 @@
     input[type=radio] + label:hover {
         border: 1px solid #ddd;
     }
-    input[type=radio][value=false]:checked + label {
+    input[type=radio][data-color=false]:checked + label {
         border: 1px solid red;
     }
-    input[type=radio][value=true]:checked + label {
+    input[type=radio][data-color=true]:checked + label {
         border: 1px solid green;
     }
 </style>
@@ -386,7 +386,7 @@
         <c:set var="count" value="1" scope="page"/>
         <c:forEach items="${answers}" var="answer">
             <c:if test="${count==3}"><br></c:if>
-            <div class="input-radio"><input type="radio" id="answer${count}" name="answer" value="${answer.correct}" onclick="do_change(${count})"><label for="answer${count}">${answer.text}</label></div>
+            <div class="input-radio"><input type="radio" id="answer${count}" name="answer" data-color="${answer.correct}" value="${answer.text}" onclick="do_change(${count})"><label for="answer${count}">${answer.text} ${answer.add}</label></div>
             <%--<input value="${answer.text}" onclick="do_change()" class="answer_button" type="radio" name="answer">--%>
             <c:set var="count" value="${count + 1}" scope="page"/>
         </c:forEach>
@@ -410,7 +410,7 @@
     <form action="game" method="post">
         <div class="topcorner">
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <button style="font-size:30px" type="submit" id="fifty" name="fifty" value="turn_down"
+            <button style="font-size:30px" type="submit" id="fifty" name="fifty" value="default"
             <c:if test="${fifty==false}">
                 class="help_disabled" disabled
             </c:if>
@@ -424,7 +424,7 @@
     <form action="game" method="post">
         <div class="topcorner">
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <button style="font-size:30px" type="submit" id="friend" name="friend" value="turn_down"
+            <button style="font-size:30px" type="submit" id="friend" name="friend" value="friend"
             <c:if test="${friend==false}">
                 class="help_disabled" disabled
             </c:if>
@@ -438,7 +438,7 @@
     <form action="game" method="post">
         <div class="topcorner">
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <button style="font-size:30px" type="submit" id="help" name="help" value="turn_down"
+            <button style="font-size:30px" type="submit" id="help" name="help" value="help"
             <c:if test="${help==false}">
                 class="help_disabled" disabled
             </c:if>
@@ -452,20 +452,20 @@
 <form action="game" method="post">
     <div class="topcorner">
         <br><br><br><br>        <br><br><br><br>
-        <button style="font-size:35px" class="save_money" type="submit" name="money" value="turn_down"> <i class="fa fa-money"></i></button>
+        <button style="font-size:35px" class="save_money" type="submit" name="money" value="money"> <i class="fa fa-money"></i></button>
     </div>
 </form>
 
 <form action="/logout" method="get">
     <div class="topcorner">
         <br><br><br><br>
-        <button style="font-size:35px" class="log_out" type="submit" name="action" value="turn_down"><i class="fa fa-sign-out"></i></button>
+        <button style="font-size:35px" class="log_out" type="submit" name="action" value="default"><i class="fa fa-sign-out"></i></button>
     </div>
 </form>
 
 <form action="/" method="get">
     <div class="topcorner">
-        <button style="font-size:35px" class="log_out" type="submit" name="action" value="turn_down"><i class="fa fa-home"></i></button>
+        <button style="font-size:35px" class="log_out" type="submit" name="action" value="default"><i class="fa fa-home"></i></button>
     </div>
 </form>
 

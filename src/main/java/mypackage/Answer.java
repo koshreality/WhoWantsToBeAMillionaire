@@ -1,12 +1,21 @@
 package mypackage;
 
 public class Answer {
+    String text;
+    boolean correct;
+    String add;
+
+    public Answer(String text, boolean correct, String add) {
+        this.text = text;
+        this.correct = correct;
+        this.add = add;
+    }
+
     public Answer(String text, boolean correct) {
+        this.add = "";
         this.text = text;
         this.correct = correct;
     }
-
-    String text;
 
     public String getText() {
         return text;
@@ -24,5 +33,11 @@ public class Answer {
         this.correct = correct;
     }
 
-    boolean correct;
+    public String getAdd() {
+        return add;
+    }
+
+    public void setAdd(String add) {
+        this.add = add;
+    }
 }

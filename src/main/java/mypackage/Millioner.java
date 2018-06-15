@@ -94,13 +94,13 @@ public class Millioner extends CommonServlet {
     boolean have_help;
     boolean have_friend;
 
-    int getFailMoney(int question_number) {
-        if (question_number == 0) return 0;
+    int getFailMoney(int question_index) {
+        if (question_index == 0) return 0;
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT TOP 1 money FROM money " +
                         "WHERE level <= ? AND fireproof = 1 " +
                         "ORDER BY money DESC")) {
-            stmt.setInt(1, question_number-1);
+            stmt.setInt(1, question_index-1);
             ResultSet rs = stmt.executeQuery();
             rs.next();
             return rs.getInt("money");
@@ -112,21 +112,19 @@ public class Millioner extends CommonServlet {
         return 0;
     }
 
-    void updateMoney(int question_number) {
-        if (question_number == 0) {
+    void updateMoney(int question_index) {
+        if (question_index == 0) {
             current_money = 0;
             fail_money = 0;
             fireproof = false;
         }
         try (PreparedStatement stmt = conn.prepareStatement(
-            "SELECT money, fireproof FROM money WHERE level = ?")) {
-            stmt.setInt(1, question_number-1);
+            "SELECT money FROM money WHERE level = ?")) {
+            stmt.setInt(1, question_index-1);
             ResultSet rs = stmt.executeQuery();
             rs.next();
-            fireproof = rs.getBoolean("fireproof");
             current_money = rs.getInt("money");
-            if (fireproof) fail_money = current_money;
-            else fail_money = getFailMoney(question_number-1);
+            fail_money = getFailMoney(question_index);
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
             System.out.println("SQLState: " + ex.getSQLState());
@@ -158,6 +156,7 @@ public class Millioner extends CommonServlet {
                 current_money = 0;
                 fail_money = 0;
                 current_question = getRandomQuestion(0);
+                saveState();
             }
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -291,7 +290,6 @@ public class Millioner extends CommonServlet {
         if (half == false) {
             answers.add(new Answer(current_question.getInc2(), false));
             answers.add(new Answer(current_question.getInc3(), false));
-            saveState();
         } else {
             setHaveFifty(false);
         }
@@ -323,15 +321,15 @@ public class Millioner extends CommonServlet {
         for (Answer a : answers) {
             ++i;
             if (a.correct) {
-                a.text += " (" + randomNum + "%)";
+                a.add = " (" + randomNum + "%)";
             } else if (i < count) {
                 int randomNum2 = ThreadLocalRandom.current().nextInt(
                         0,
                         100 - sum + 1);
                 sum += randomNum2;
-                a.text += " (" + randomNum2 + "%)";
+                a.add = " (" + randomNum2 + "%)";
             } else {
-                a.text += " (" + (100 - sum) + "%)";
+                a.add = " (" + (100 - sum) + "%)";
             }
         }
         setHaveHelp(false);
@@ -342,11 +340,11 @@ public class Millioner extends CommonServlet {
         if (ThreadLocalRandom.current().nextInt(0, 100) > question_number * 5) {
             for (Answer a : answers) {
                 if (a.correct) {
-                    a.text += " (friend's advice)";
+                    a.add = " (friend's advice)";
                 }
             }
         } else {
-            answers.get(ThreadLocalRandom.current().nextInt(0, answers.size())).text += " (?)";
+            answers.get(ThreadLocalRandom.current().nextInt(0, answers.size())).text += " (friend's advice)";
         }
         setHaveFriend(false);
         repeat(request, response);
@@ -358,8 +356,13 @@ public class Millioner extends CommonServlet {
         String help = request.getParameter("help");
         String friend = request.getParameter("friend");
         String money = request.getParameter("money");
+        String start = request.getParameter("start");
+        if (start != null) {
+            retrieveState();
+            next(request, response, false);
+        }
         if (answer != null) {
-            if (answer.equals("true")) {
+            if (answer.equals(current_question.getCorrect())) {
                 question_number++;
                 updateMoney(question_number);
                 if (question_number == max_question_number) {
@@ -368,28 +371,52 @@ public class Millioner extends CommonServlet {
                     request.getRequestDispatcher("win.jsp").forward(request, response);
                 }
                 current_question = getRandomQuestion(question_number / 3);
+                saveState();
+                retrieveState();
                 next(request, response, false);
-            } else {
+            } else if (answer.equals(current_question.getInc1())
+                    || answer.equals(current_question.getInc2())
+                    || answer.equals(current_question.getInc3())){
                 end_game();
                 request.setAttribute("money", fail_money);
                 request.getRequestDispatcher("game_over.jsp").forward(request, response);
+            } else {
+                retrieveState();
+                repeat(request, response);
             }
         } else if (fifty != null) {
-            next(request, response, true);
+            if (have_fifty) {
+                next(request, response, true);
+            } else {
+                retrieveState();
+                repeat(request, response);
+            }
         } else if (help != null) {
-            help(request, response);
+            if (have_help) {
+                help(request, response);
+            } else {
+                retrieveState();
+                repeat(request, response);
+            }
         } else if (friend != null) {
-            friend(request, response);
+            if (have_friend) {
+                friend(request, response);
+            } else {
+                retrieveState();
+                repeat(request, response);
+            }
         } else if (money != null) {
             fail_money = current_money;
             end_game();
             request.setAttribute("money", fail_money);
+            retrieveState();
             request.getRequestDispatcher("game_over.jsp").forward(request, response);
+        } else {
+            response.sendRedirect("/millioner");
         }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        retrieveState();
-        next(request, response, false);
+        response.sendRedirect("/millioner");
     }
 }

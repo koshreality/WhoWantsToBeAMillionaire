@@ -51,9 +51,9 @@
 
 
 <div>
-<form action="game" method="get">
+<form action="game" method="post">
     <div class="center">
-    <button class="start_button" type="submit" name="action" value="turn_down"><h1>Start!</h1></button>
+    <button class="start_button" type="submit" name="start" value="start"><h1>Start!</h1></button>
     </div>
 </form>
 </div>
